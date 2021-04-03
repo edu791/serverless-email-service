@@ -1,0 +1,47 @@
+service: serverless-mail-service
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: sa-east-1
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  apiGateway:
+    shouldStartNameWithService: true
+    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+  iam:
+    role:
+      statements:
+        - ${file(iam/EmailsTableIAM.yml):EmailsTableIAM}
+  environment:
+    EMAILS_TABLE_NAME: ${self:custom.EmailsTable.name}
+    FROM_NAME: ${file(${self:custom.envfile}):FROM_NAME}
+    FROM_EMAIL: ${file(${self:custom.envfile}):FROM_EMAIL}
+    EMAIL_API_KEY: ${file(${self:custom.envfile}):EMAIL_API_KEY}
+
+resources:
+  Resources:
+    EmailsTable: ${file(resources/EmailsTable.yml):EmailsTable}
+
+functions:
+  sendEmail:
+    handler: src/handler.sendEmail
+    timeout: 30
+    events:
+      - http: 
+          path: send-email
+          method: post
+
+custom:
+  envfile: ./config.${self:provider.stage}.yml
+  EmailsTable:
+    name: !Ref EmailsTable
+    arn: !GetAtt EmailsTable.Arn
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true

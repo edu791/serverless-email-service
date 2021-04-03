@@ -1,0 +1,6 @@
+EmailsTableIAM:
+  Effect: Allow
+  Action:
+    - dynamodb:PutItem
+  Resource:
+    - ${self:custom.EmailsTable.arn}

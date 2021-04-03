@@ -1,0 +1,3 @@
+FROM_NAME: Admin
+FROM_EMAIL: info@mycompanyname.com
+EMAIL_API_KEY: 
