@@ -1,4 +1,3 @@
-import { promisify } from 'util';
 import * as ejs from 'ejs';
 import { validate } from 'class-validator';
 import { EmailDto, FromDto, AttachmentDto } from './email.dto';
@@ -7,7 +6,6 @@ import { plainToClass } from 'class-transformer';
 import { v4 as uuid } from 'uuid';
 import AWS from 'aws-sdk';
 
-const renderFile = promisify(ejs.renderFile).bind(ejs);
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 export class Email {
@@ -64,10 +62,13 @@ export class Email {
   async buildHtml(data?: any): Promise<void> {
     if (this.type) {
       // If custom email
-      this.html = await renderFile(`src/custom-emails/templates/${this.templateFilePath}`, {
-        ...this.messageData,
-        ...(data || undefined),
-      });
+      this.html = await ejs.renderFile(
+        `src/custom-emails/templates/${this.templateFilePath}`,
+        {
+          ...(data || undefined),
+        },
+        { async: false },
+      );
     }
   }
 
