@@ -10,7 +10,6 @@
     "offline": "serverless offline start --stage=dev",
     "deploy:dev": "serverless deploy -v --stage=dev",
     "deploy:prod": "serverless deploy -v --stage=prod",
-    "prettier": "prettier --config .prettierrc -l",
     "format": "prettier --write \"src/**/*.ts\"",
     "postinstall": "husky install"
   },
