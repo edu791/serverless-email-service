@@ -52,5 +52,5 @@ Thumbs.db
 
 # Secrets
 config.*.yml
-# except this file
-!config.example.yml
+.env
+.env.*

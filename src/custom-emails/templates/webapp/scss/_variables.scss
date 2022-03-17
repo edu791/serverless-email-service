@@ -1,0 +1,12 @@
+$primary-color: #f40002;
+$success-color: #12c269;
+$medium-color: #e8ebf7;
+$medium-low-color: #f7f9fc;
+$dark-color: #5f6f86;
+$font-family: 'Montserrat', sans-serif;
+
+@mixin media-max-width($width) {
+  @media only screen and (max-width: $width) {
+    @content;
+  }
+}

@@ -13,6 +13,6 @@ export class WelcomeEmail extends Email {
     super(messageDataDto);
     this.subject = 'Thank you for registering on the website!';
     this.messageData = plainToClass(WelcomeDto, this.messageData);
-    this.templateFilePath = `webapp/${this.type}.html`;
+    this.templateFilePath = `webapp/${this.type}.pug`;
   }
 }

@@ -1,10 +1,11 @@
-import * as ejs from 'ejs';
 import { validate } from 'class-validator';
-import { EmailDto, FromDto, AttachmentDto } from './email.dto';
+import { EmailDto, FromDto, AttachmentDto, MailSettingsDto } from './email.dto';
 import { send as sendgridSend } from './sendgrid';
 import { plainToClass } from 'class-transformer';
 import { v4 as uuid } from 'uuid';
 import AWS from 'aws-sdk';
+import pug from 'pug';
+import path from 'path';
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
@@ -18,6 +19,7 @@ export class Email {
   protected text: string;
   protected html: string;
   protected attachments: AttachmentDto[];
+  protected mailSettings: MailSettingsDto;
   protected messageData: any;
   protected templateFilePath: string;
 
@@ -25,19 +27,21 @@ export class Email {
     this.id = uuid();
     this.app = emailDto.app;
     this.type = emailDto.type;
-    const from: FromDto = emailDto.from
-      ? emailDto.from
-      : {
+    this.from = plainToClass(
+      FromDto,
+      emailDto.from ||
+        ({
           name: process.env.FROM_NAME,
           email: process.env.FROM_EMAIL,
-        };
-    this.from = plainToClass(FromDto, emailDto.from || from);
+        } as FromDto),
+    );
     this.to = emailDto.to;
     this.subject = emailDto.subject;
     this.text = emailDto.text;
     this.html = emailDto.html;
     this.attachments = emailDto.attachments;
     this.messageData = emailDto.messageData;
+    this.mailSettings = emailDto.mailSettings;
   }
 
   async validate(): Promise<void> {
@@ -60,16 +64,18 @@ export class Email {
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async buildHtml(data?: any): Promise<void> {
+    // If custom email
     if (this.type) {
-      // If custom email
-      this.html = await ejs.renderFile(
-        `src/custom-emails/templates/${this.templateFilePath}`,
-        {
-          ...(data || undefined),
-        },
-        { async: false },
+      const compiledFunction = pug.compileFile(
+        path.resolve(__dirname, `custom-emails/templates/${this.templateFilePath}`),
       );
+      console.log('datos', { ...this.messageData, ...data });
+      this.html = compiledFunction({ ...this.messageData, ...data });
     }
+  }
+
+  getHTML(): string {
+    return this.html;
   }
 
   async send(): Promise<void> {
@@ -80,6 +86,7 @@ export class Email {
       this.text,
       this.html || this.text,
       this.attachments,
+      this.mailSettings,
     );
 
     if (!process.env.IS_OFFLINE) {

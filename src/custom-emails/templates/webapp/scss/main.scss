@@ -1,0 +1,10 @@
+@import 'functions.scss';
+@import 'variables.scss';
+@import 'clients-config.scss';
+
+h1 {
+  color: $success-color;
+}
+ul {
+  color: $dark-color;
+}

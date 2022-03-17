@@ -1,5 +1,5 @@
 import * as sendgrid from '@sendgrid/mail';
-import { AttachmentDto, FromDto } from './email.dto';
+import { AttachmentDto, FromDto, MailSettingsDto } from './email.dto';
 
 export async function send(
   from: FromDto,
@@ -8,17 +8,23 @@ export async function send(
   text: string,
   html: string,
   attachments: AttachmentDto[],
+  mailSettings: MailSettingsDto,
 ): Promise<any> {
   try {
     sendgrid.setApiKey(process.env.EMAIL_API_KEY);
-    const response = await sendgrid.send({
+    const data: sendgrid.MailDataRequired = {
       to,
       from,
       subject,
       text,
       html,
       attachments,
-    });
+      mailSettings: { bypassListManagement: { enable: mailSettings.bypassUnsubscriptions } },
+    };
+    if (mailSettings.hideUnsubscriptionButton) {
+      data.trackingSettings = { subscriptionTracking: { enable: false } };
+    }
+    const response = await sendgrid.send(data);
     const [clientResponse] = response; // the index 0 contains info about the response
     return clientResponse;
   } catch (error) {

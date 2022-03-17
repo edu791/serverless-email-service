@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBase64,
+  IsBoolean,
   isEmail,
   IsEmail,
   IsNotEmpty,
@@ -41,6 +42,10 @@ export class AttachmentDto {
   @IsBase64() content: string;
   @IsString() filename: string;
 }
+export class MailSettingsDto {
+  @IsBoolean() hideUnsubscriptionButton: boolean;
+  @IsBoolean() bypassUnsubscriptions: boolean;
+}
 export class EmailDto {
   @IsString()
   @IsNotEmpty()
@@ -79,4 +84,12 @@ export class EmailDto {
   @IsNotEmpty()
   @IsOptional()
   messageData: any;
+
+  @IsObject()
+  @IsNotEmpty()
+  @IsOptional()
+  mailSettings: MailSettingsDto = {
+    hideUnsubscriptionButton: false,
+    bypassUnsubscriptions: false,
+  };
 }

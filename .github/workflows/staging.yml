@@ -1,0 +1,28 @@
+name: Deploy Staging
+on:
+  push:
+    branches:
+      - staging
+jobs:
+  deploy-staging:
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v1
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+      - name: Serverless AWS authentication
+        run: sls config credentials --provider aws --key ${{ secrets.AWS_KEY }} --secret ${{ secrets.AWS_SECRET }}
+      - name: Install NPM dependencies
+        run: npm install
+      - name: Creating env file
+        run: doppler secrets download --no-file --format yaml > .env.yml
+        env:
+          DOPPLER_TOKEN: ${{ secrets.STAGING_DOPPLER_TOKEN }}
+      - name: Deploy
+        run: npm run deploy:staging
